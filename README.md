@@ -1,5 +1,7 @@
 Using perplexity.ai to add a sample rate converter to agg23's openfpga-SNES core.  Yup :-D
 
+Now for agg23's original read me v
+
 # SNES for Analogue Pocket
 
 Ported from the original core developed by [srg320](https://github.com/srg320) ([Patreon](https://www.patreon.com/srg320)). Latest upstream available at https://github.com/MiSTer-devel/SNES_MiSTer.

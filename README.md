@@ -1,3 +1,5 @@
+I asked Perplexity.ai to write a resampler for agg23's SNES core.  But it seems to have failed to uploaded it here.  However it did make the repository.  I have the files from perplexity so at some point I will learn how to patch or uploaded them here.  What a time!
+
 # SNES for Analogue Pocket
 
 Ported from the original core developed by [srg320](https://github.com/srg320) ([Patreon](https://www.patreon.com/srg320)). Latest upstream available at https://github.com/MiSTer-devel/SNES_MiSTer.

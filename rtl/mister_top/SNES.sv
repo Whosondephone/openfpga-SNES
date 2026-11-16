@@ -145,7 +145,9 @@ module MAIN_SNES (
 
     // Audio
     output wire [15:0] audio_l,
-    output wire [15:0] audio_r
+    output wire [15:0] audio_r,
+    // Single clk_sys cycle pulse when the S-DSP produces a new (~32kHz) sample
+    output wire        audio_rdy
 );
   parameter USE_CX4 = 1'b0;
   parameter USE_SDD1 = 1'b0;
@@ -446,6 +448,7 @@ module MAIN_SNES (
 
       .AUDIO_L(audio_l),
       .AUDIO_R(audio_r),
+      .AUDIO_RDY(audio_rdy),
 
       // New upstream ports since fork — tied to safe defaults
       .RAM_SIZE(4'b0),

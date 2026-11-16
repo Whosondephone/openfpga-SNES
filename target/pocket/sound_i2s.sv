@@ -23,6 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // A very simple audio i2s bridge to APF, based on their example code
+//
+// Modified: samples are no longer sampled-and-held from a free running source.
+// Once per 48kHz I2S frame, `audio_sample_req` is pulsed (in the clk_audio
+// domain). The core must answer with exactly one new sample by pulsing
+// `audio_sample_valid` (also clk_audio domain). That sample is played in the
+// following I2S frame, so the source runs natively at 48kHz, locked to the DAC.
 module sound_i2s #(
     parameter CHANNEL_WIDTH = 15,
     parameter SIGNED_INPUT  = 0
@@ -33,6 +39,10 @@ module sound_i2s #(
     // Left and right audio channels. Can be in an arbitrary clock domain
     input wire [CHANNEL_WIDTH - 1:0] audio_l,
     input wire [CHANNEL_WIDTH - 1:0] audio_r,
+    // Pulse for one clk_audio cycle when audio_l/audio_r hold a new 48kHz sample
+    input wire audio_sample_valid,
+    // Pulses for one clk_audio cycle at the start of every 48kHz I2S frame
+    output reg audio_sample_req = 0,
 
     output reg audio_mclk,
     output reg audio_lrck,
@@ -105,25 +115,19 @@ module sound_i2s #(
       .clk_write(clk_audio),
       .clk_read (clk_74a),
 
-      .write_en(write_en),
+      .write_en(audio_sample_valid),  // one write per 48kHz sample
       .data(audgen_sampdata),
       .data_s(audgen_sampdata_s)
   );
 
-  reg write_en = 0;
-  reg [CHANNEL_WIDTH - 1:0] prev_left;
-  reg [CHANNEL_WIDTH - 1:0] prev_right;
+  // Request the next sample from the core once per I2S frame. A toggle is
+  // generated in the clk_74a domain and synchronized into clk_audio
+  reg req_toggle_74a = 0;
+  reg [2:0] req_toggle_s = 0;
 
-  // Mark write when necessary
   always @(posedge clk_audio) begin
-    prev_left  <= audio_l;
-    prev_right <= audio_r;
-
-    write_en   <= 0;
-
-    if (audio_l != prev_left || audio_r != prev_right) begin
-      write_en <= 1;
-    end
+    req_toggle_s <= {req_toggle_s[1:0], req_toggle_74a};
+    audio_sample_req <= req_toggle_s[2] ^ req_toggle_s[1];
   end
 
   wire [31:0] audgen_sampdata_s;
@@ -145,6 +149,8 @@ module sound_i2s #(
         // Reload sample shifter
         if (~audio_lrck) begin
           audgen_sampshift <= audgen_sampdata_s;
+          // Start of a new stereo frame: ask the core for the next sample
+          req_toggle_74a   <= ~req_toggle_74a;
         end
       end else if (audio_lrck_cnt < 16) begin
         // only shift for 16 clocks per channel

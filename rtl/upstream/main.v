@@ -151,7 +151,8 @@ module main #(
 	output            SS_DDR_REQ,
 
 	output     [15:0] AUDIO_L,
-	output     [15:0] AUDIO_R
+	output     [15:0] AUDIO_R,
+	output            AUDIO_RDY
 );
 
 parameter USE_DLH = 1'b1;
@@ -284,7 +285,8 @@ SNES SNES
 	.dsp_freq(DSP_FREQ),
 
 	.audio_l(AUDIO_L),
-	.audio_r(AUDIO_R)
+	.audio_r(AUDIO_R),
+	.audio_rdy(AUDIO_RDY)
 );
 
 

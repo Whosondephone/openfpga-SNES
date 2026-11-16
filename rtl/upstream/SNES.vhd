@@ -114,7 +114,8 @@ entity SNES is
 		DBG_CPU_EN	: in std_logic;
 
 		AUDIO_L		: out std_logic_vector(15 downto 0);
-		AUDIO_R		: out std_logic_vector(15 downto 0)
+		AUDIO_R		: out std_logic_vector(15 downto 0);
+		AUDIO_RDY	: out std_logic
 	);
 end SNES;
 
@@ -444,7 +445,8 @@ begin
 		SS_DO			=> SS_DSP_DO,
 
 		AUDIO_L		=> AUDIO_L,
-		AUDIO_R		=> AUDIO_R
+		AUDIO_R		=> AUDIO_R,
+		SND_RDY		=> AUDIO_RDY
 	);
 
 	SS_SPC_DO <= SS_SMP_DO when SS_SMP_SEL = '1' else SS_DSP_DO;

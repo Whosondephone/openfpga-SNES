@@ -619,6 +619,7 @@ module core_top (
 
   wire [15:0] audio_l;
   wire [15:0] audio_r;
+  wire audio_rdy;
 
   wire [3:0] sram_size;
 
@@ -911,7 +912,8 @@ module core_top (
 
       // Audio
       .audio_l(audio_l),
-      .audio_r(audio_r)
+      .audio_r(audio_r),
+      .audio_rdy(audio_rdy)
   );
 
   // Video
@@ -979,6 +981,31 @@ module core_top (
     end
   end
 
+  // Audio
+  //
+  // The S-DSP runs at ~32kHz. Resample it to the native 48kHz I2S rate,
+  // locked to the DAC's frame clock, so every DSP sample is used exactly once
+  // (pitch and tempo unchanged) and no samples are dropped or doubled.
+
+  wire audio_sample_req;
+  wire audio_sample_valid;
+  wire [15:0] audio_l_48k;
+  wire [15:0] audio_r_48k;
+
+  audio_resampler audio_resampler (
+      .clk  (clk_sys_21_48),
+      .reset(~pll_core_locked),
+
+      .in_valid(audio_rdy),
+      .in_l    (audio_l),
+      .in_r    (audio_r),
+
+      .out_req  (audio_sample_req),
+      .out_valid(audio_sample_valid),
+      .out_l    (audio_l_48k),
+      .out_r    (audio_r_48k)
+  );
+
   sound_i2s #(
       .CHANNEL_WIDTH(16),
       .SIGNED_INPUT (1)
@@ -986,8 +1013,10 @@ module core_top (
       .clk_74a  (clk_74a),
       .clk_audio(clk_sys_21_48),
 
-      .audio_l(audio_l),
-      .audio_r(audio_r),
+      .audio_l(audio_l_48k),
+      .audio_r(audio_r_48k),
+      .audio_sample_valid(audio_sample_valid),
+      .audio_sample_req(audio_sample_req),
 
       .audio_mclk(audio_mclk),
       .audio_lrck(audio_lrck),

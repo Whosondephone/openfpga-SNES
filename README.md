@@ -1,4 +1,4 @@
-I asked Perplexity.ai to write a resampler for agg23's SNES core.  But it seems to have failed to uploaded it here.  However it did make the repository.  I have the files from perplexity so at some point I will learn how to patch or uploaded them here.  What a time!
+I'm not exactly sure what I'm doing but this is a copy of agg23's snes core.  I have made a branch to include a resampler to 48khz.
 
 # SNES for Analogue Pocket
 
